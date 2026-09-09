@@ -1,0 +1,82 @@
+[
+  {
+    "id": "RBT-0041",
+    "type": "Welding Unit",
+    "client": "Volcarex Auto",
+    "location": "Plant A — Bay 3",
+    "status": "deployed",
+    "time": "07:14 AM",
+    "elapsed": "5h 22m",
+    "progress": 100
+  },
+  {
+    "id": "RBT-0078",
+    "type": "Precision Drill",
+    "client": "Nexford Steel",
+    "location": "Plant B — Bay 1",
+    "status": "deployed",
+    "time": "08:00 AM",
+    "elapsed": "4h 36m",
+    "progress": 100
+  },
+  {
+    "id": "RBT-0103",
+    "type": "Assembly System",
+    "client": "Orbital Dynamics",
+    "location": "Facility C — L2",
+    "status": "deployed",
+    "time": "06:45 AM",
+    "elapsed": "5h 51m",
+    "progress": 100
+  },
+  {
+    "id": "RBT-0055",
+    "type": "Coating Robot",
+    "client": "Lumex Corp",
+    "location": "Plant A — Bay 7",
+    "status": "inprogress",
+    "time": "10:20 AM",
+    "elapsed": "2h 16m",
+    "progress": 63
+  },
+  {
+    "id": "RBT-0089",
+    "type": "Inspection Unit",
+    "client": "TerraFab Inc.",
+    "location": "Facility D — L1",
+    "status": "inprogress",
+    "time": "11:05 AM",
+    "elapsed": "1h 31m",
+    "progress": 38
+  },
+  {
+    "id": "RBT-0117",
+    "type": "Laser Cutter",
+    "client": "Meridian Works",
+    "location": "Plant B — Bay 4",
+    "status": "inprogress",
+    "time": "11:48 AM",
+    "elapsed": "0h 48m",
+    "progress": 17
+  },
+  {
+    "id": "RBT-0132",
+    "type": "Heavy Lift System",
+    "client": "Vantage Metals",
+    "location": "Facility C — L4",
+    "status": "pending",
+    "time": "—",
+    "elapsed": "Not started",
+    "progress": 0
+  },
+  {
+    "id": "RBT-0150",
+    "type": "Sorting Unit",
+    "client": "CorePlex Mfg.",
+    "location": "Plant A — Bay 11",
+    "status": "pending",
+    "time": "—",
+    "elapsed": "Not started",
+    "progress": 0
+  }
+]

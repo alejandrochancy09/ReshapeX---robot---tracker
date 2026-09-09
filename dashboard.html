@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robot Deployment Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #0f1117;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(90deg, #1a1d2e, #1e2235);
+      border-bottom: 1px solid #2d3250;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    header p {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .header-time {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Main ── */
+    main {
+      padding: 32px 40px;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* ── Summary Cards ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .summary-card {
+      background: #1a1d2e;
+      border: 1px solid #2d3250;
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+
+    .summary-card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    .summary-card .value {
+      font-size: 32px;
+      font-weight: 700;
+    }
+
+    .summary-card .sub {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .value.green  { color: #22c55e; }
+    .value.yellow { color: #eab308; }
+    .value.gray   { color: #94a3b8; }
+    .value.purple { color: #a78bfa; }
+
+    /* ── Section title ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #2d3250;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #fff;
+    }
+
+    /* ── Table ── */
+    .table-wrapper {
+      background: #1a1d2e;
+      border: 1px solid #2d3250;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #1e2235;
+    }
+
+    th {
+      text-align: left;
+      padding: 14px 20px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      font-weight: 600;
+      border-bottom: 1px solid #2d3250;
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid #1e2235;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(99, 102, 241, 0.04);
+    }
+
+    /* ── Robot Name ── */
+    .robot-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .robot-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .robot-avatar.deployed   { background: rgba(34, 197, 94, 0.15); }
+    .robot-avatar.inprogress { background: rgba(234, 179, 8, 0.15); }
+    .robot-avatar.pending    { background: rgba(148, 163, 184, 0.12); }
+
+    .robot-name strong { font-weight: 600; font-size: 14px; }
+    .robot-name span   { font-size: 12px; color: #64748b; display: block; margin-top: 1px; }
+
+    /* ── Status Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .badge.deployed {
+      background: rgba(34, 197, 94, 0.12);
+      color: #22c55e;
+    }
+    .badge.deployed::before { background: #22c55e; }
+
+    .badge.inprogress {
+      background: rgba(234, 179, 8, 0.12);
+      color: #eab308;
+    }
+    .badge.inprogress::before {
+      background: #eab308;
+      animation: pulse 1.2s infinite;
+    }
+
+    .badge.pending {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+    }
+    .badge.pending::before { background: #94a3b8; }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 6px;
+      background: #2d3250;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    .progress-fill.deployed   { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .progress-fill.inprogress { background: linear-gradient(90deg, #eab308, #facc15); }
+    .progress-fill.pending    { background: #334155; }
+
+    .progress-pct {
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      width: 32px;
+      text-align: right;
+    }
+
+    /* ── Time ── */
+    .time-cell { color: #94a3b8; font-size: 13px; }
+    .time-cell strong { color: #cbd5e1; font-weight: 500; }
+
+    /* ── Location ── */
+    .location {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: #334155;
+      border-top: 1px solid #1e2235;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-icon">🤖</div>
+    <div>
+      <h1>Robot Deployment Tracker</h1>
+      <p>Manufacturing Operations — Floor A &amp; B</p>
+    </div>
+  </div>
+  <div class="header-time">
+    <span class="live-dot"></span>
+    <span id="clock"></span>
+  </div>
+</header>
+
+<main>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">Total Robots</div>
+      <div class="value purple">12</div>
+      <div class="sub">Across 2 floors</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Deployed</div>
+      <div class="value green">7</div>
+      <div class="sub">58% complete</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">In Progress</div>
+      <div class="value yellow">3</div>
+      <div class="sub">Active deployments</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Pending</div>
+      <div class="value gray">2</div>
+      <div class="sub">Queued for deployment</div>
+    </div>
+  </div>
+
+  <!-- Robot Table -->
+  <div class="section-header">
+    <h2>Deployment Status</h2>
+    <div class="filter-group">
+      <button class="filter-btn active" onclick="filterTable('all', this)">All</button>
+      <button class="filter-btn" onclick="filterTable('deployed', this)">Deployed</button>
+      <button class="filter-btn" onclick="filterTable('inprogress', this)">In Progress</button>
+      <button class="filter-btn" onclick="filterTable('pending', this)">Pending</button>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="robotTable">
+      <thead>
+        <tr>
+          <th>Robot</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th>Deployment Time</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>Robot Deployment Tracker &mdash; Manufacturing Ops Dashboard &mdash; 2026</footer>
+
+<script>
+  const robots = [
+    { id: 'RBT-001', name: 'WeldBot Alpha',   type: 'Welding Unit',      status: 'deployed',   progress: 100, start: '08:14', duration: '2h 31m', location: 'Floor A — Station 1' },
+    { id: 'RBT-002', name: 'PaintBot X2',     type: 'Coating System',    status: 'deployed',   progress: 100, start: '08:22', duration: '2h 18m', location: 'Floor A — Station 2' },
+    { id: 'RBT-003', name: 'AssembleBot 3',   type: 'Assembly Unit',     status: 'inprogress', progress: 74,  start: '09:55', duration: '0h 50m', location: 'Floor A — Station 3' },
+    { id: 'RBT-004', name: 'QualityBot Pro',  type: 'Inspection Unit',   status: 'deployed',   progress: 100, start: '07:45', duration: '3h 00m', location: 'Floor A — Station 4' },
+    { id: 'RBT-005', name: 'PackBot Delta',   type: 'Packaging System',  status: 'deployed',   progress: 100, start: '08:01', duration: '2h 44m', location: 'Floor B — Station 1' },
+    { id: 'RBT-006', name: 'WeldBot Beta',    type: 'Welding Unit',      status: 'inprogress', progress: 47,  start: '10:10', duration: '0h 35m', location: 'Floor B — Station 2' },
+    { id: 'RBT-007', name: 'DrillBot Z1',     type: 'Precision Drill',   status: 'deployed',   progress: 100, start: '07:30', duration: '3h 15m', location: 'Floor B — Station 3' },
+    { id: 'RBT-008', name: 'SortBot Gamma',   type: 'Sorting Unit',      status: 'deployed',   progress: 100, start: '08:45', duration: '2h 00m', location: 'Floor B — Station 4' },
+    { id: 'RBT-009', name: 'CutBot Sigma',    type: 'Laser Cutter',      status: 'inprogress', progress: 21,  start: '10:30', duration: '0h 15m', location: 'Floor A — Station 5' },
+    { id: 'RBT-010', name: 'GrindBot Theta',  type: 'Surface Grinder',   status: 'deployed',   progress: 100, start: '08:00', duration: '2h 45m', location: 'Floor B — Station 5' },
+    { id: 'RBT-011', name: 'LiftBot Omega',   type: 'Heavy Lifter',      status: 'pending',    progress: 0,   start: '—',     duration: '—',      location: 'Floor A — Station 6' },
+    { id: 'RBT-012', name: 'MoveBot Epsilon', type: 'Transport Unit',    status: 'pending',    progress: 0,   start: '—',     duration: '—',      location: 'Floor B — Station 6' },
+  ];
+
+  const statusLabel = { deployed: 'Deployed', inprogress: 'In Progress', pending: 'Pending' };
+  const icons = { deployed: '✅', inprogress: '⚙️', pending: '⏳' };
+
+  function renderTable(data) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = data.map(r => `
+      <tr data-status="${r.status}">
+        <td>
+          <div class="robot-name">
+            <div class="robot-avatar ${r.status}">${icons[r.status]}</div>
+            <div>
+              <strong>${r.name}</strong>
+              <span>${r.id} &middot; ${r.type}</span>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge ${r.status}">${statusLabel[r.status]}</span></td>
+        <td>
+          <div class="progress-wrap">
+            <div class="progress-track">
+              <div class="progress-fill ${r.status}" style="width:${r.progress}%"></div>
+            </div>
+            <span class="progress-pct">${r.progress}%</span>
+          </div>
+        </td>
+        <td class="time-cell">
+          <strong>${r.start !== '—' ? 'Started ' + r.start : '—'}</strong><br>
+          ${r.duration !== '—' ? 'Duration: ' + r.duration : 'Not started'}
+        </td>
+        <td class="location">${r.location}</td>
+      </tr>
+    `).join('');
+  }
+
+  function filterTable(status, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filtered = status === 'all' ? robots : robots.filter(r => r.status === status);
+    renderTable(filtered);
+  }
+
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  renderTable(robots);
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+
+</body>
+</html>

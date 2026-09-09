@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ReshapeX — Robot Deployment Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #090c14;
+      --surface:   #111520;
+      --surface2:  #161b2c;
+      --border:    #1f2640;
+      --border2:   #252d47;
+      --text:      #e2e8f0;
+      --muted:     #4b5680;
+      --muted2:    #6b7db3;
+      --accent:    #6366f1;
+      --accent2:   #818cf8;
+      --green:     #22c55e;
+      --yellow:    #f59e0b;
+      --slate:     #64748b;
+      --radius:    12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── HEADER ─────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-mark svg { width: 18px; height: 18px; fill: #fff; }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border2);
+      margin: 0 14px;
+    }
+
+    .logo-subtitle {
+      font-size: 13px;
+      color: var(--muted2);
+      font-weight: 400;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      background: rgba(34, 197, 94, 0.08);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 20px;
+      font-size: 12px;
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: blink 1.6s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.25; }
+    }
+
+    .clock {
+      font-size: 13px;
+      color: var(--muted2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* ─── MAIN ───────────────────────────────────── */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 36px 40px 60px;
+    }
+
+    .page-title {
+      margin-bottom: 28px;
+    }
+
+    .page-title h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .page-title p {
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--muted2);
+    }
+
+    /* ─── SUMMARY CARDS ──────────────────────────── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .card:hover {
+      border-color: var(--border2);
+      transform: translateY(-1px);
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .card.total::after   { background: linear-gradient(90deg, #6366f1, #a855f7); }
+    .card.deployed::after { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .card.inprog::after  { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+    .card.pending::after { background: linear-gradient(90deg, #475569, #64748b); }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted2);
+      font-weight: 600;
+    }
+
+    .card-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .card.total   .card-icon { background: rgba(99, 102, 241, 0.12); }
+    .card.deployed .card-icon { background: rgba(34, 197, 94, 0.1); }
+    .card.inprog  .card-icon { background: rgba(245, 158, 11, 0.1); }
+    .card.pending .card-icon { background: rgba(71, 85, 105, 0.2); }
+
+    .card-value {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+
+    .card.total   .card-value { color: #818cf8; }
+    .card.deployed .card-value { color: #22c55e; }
+    .card.inprog  .card-value { color: #f59e0b; }
+    .card.pending .card-value { color: #64748b; }
+
+    .card-sub {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-sub span {
+      color: var(--muted2);
+      font-weight: 500;
+    }
+
+    /* ─── TABLE SECTION ──────────────────────────── */
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .table-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .table-header p {
+      font-size: 12px;
+      color: var(--muted2);
+      margin-top: 2px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--muted2);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .filter-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead { background: var(--surface2); }
+
+    th {
+      padding: 13px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted2);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13.5px;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tbody tr {
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover td { background: rgba(99, 102, 241, 0.035); }
+
+    /* Robot ID + type */
+    .robot-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .robot-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    .icon-deployed   { background: rgba(34, 197, 94, 0.1); }
+    .icon-inprogress { background: rgba(245, 158, 11, 0.1); }
+    .icon-pending    { background: rgba(100, 116, 139, 0.1); }
+
+    .robot-id {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: 0.2px;
+    }
+
+    .robot-type {
+      font-size: 11.5px;
+      color: var(--muted2);
+      margin-top: 1px;
+    }
+
+    /* Client */
+    .client-name {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* Location */
+    .location {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      color: var(--muted2);
+    }
+
+    .location-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* Status Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .badge.deployed {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+    .badge.deployed .badge-dot {
+      background: #22c55e;
+    }
+
+    .badge.inprogress {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    .badge.inprogress .badge-dot {
+      background: #f59e0b;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+
+    .badge.pending {
+      background: rgba(100, 116, 139, 0.1);
+      color: #64748b;
+      border: 1px solid rgba(100, 116, 139, 0.2);
+    }
+    .badge.pending .badge-dot {
+      background: #64748b;
+    }
+
+    /* Deployment time */
+    .deploy-time {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .deploy-elapsed {
+      font-size: 11.5px;
+      color: var(--muted2);
+      margin-top: 2px;
+    }
+
+    /* Progress */
+    .progress-cell {
+      min-width: 160px;
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .progress-label {
+      font-size: 11px;
+      color: var(--muted2);
+    }
+
+    .progress-pct {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted2);
+    }
+
+    .progress-pct.green  { color: #22c55e; }
+    .progress-pct.yellow { color: #f59e0b; }
+
+    .progress-track {
+      width: 100%;
+      height: 5px;
+      background: var(--border2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+    }
+
+    .progress-fill.deployed   { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .progress-fill.inprogress { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+    .progress-fill.pending    { background: #2d3553; width: 0% !important; }
+
+    /* ─── FOOTER ─────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    footer strong { color: var(--muted2); }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20"><path d="M10 2L3 6v8l7 4 7-4V6L10 2zm0 2.4l4.8 2.8v.8L10 10.8 5.2 8V7.2L10 4.4zM4.5 9.1l4.7 2.7v5.1L4.5 14V9.1zm6.3 7.8v-5.1l4.7-2.7V14l-4.7 2.9z"/></svg>
+    </div>
+    <span class="logo-text">ReshapeX</span>
+    <div class="logo-divider"></div>
+    <span class="logo-subtitle">Robot Deployment Tracker</span>
+  </div>
+
+  <div class="header-right">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      Live
+    </div>
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="avatar">RX</div>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<main>
+  <div class="page-title">
+    <h2>Deployment Overview</h2>
+    <p>Manufacturing floor robot deployment status — updated in real time</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="cards">
+    <div class="card total">
+      <div class="card-top">
+        <div class="card-label">Total Robots</div>
+        <div class="card-icon">🤖</div>
+      </div>
+      <div class="card-value">8</div>
+      <div class="card-sub">Across <span>4 facilities</span></div>
+    </div>
+
+    <div class="card deployed">
+      <div class="card-top">
+        <div class="card-label">Deployed</div>
+        <div class="card-icon">✅</div>
+      </div>
+      <div class="card-value" id="cnt-deployed">0</div>
+      <div class="card-sub"><span id="pct-deployed">0%</span> completion rate</div>
+    </div>
+
+    <div class="card inprog">
+      <div class="card-top">
+        <div class="card-label">In Progress</div>
+        <div class="card-icon">⚙️</div>
+      </div>
+      <div class="card-value" id="cnt-inprogress">0</div>
+      <div class="card-sub">Active <span>deployments</span></div>
+    </div>
+
+    <div class="card pending">
+      <div class="card-top">
+        <div class="card-label">Pending</div>
+        <div class="card-icon">🕐</div>
+      </div>
+      <div class="card-value" id="cnt-pending">0</div>
+      <div class="card-sub">Queued <span>for deployment</span></div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-header">
+    <div>
+      <h3>Robot Fleet</h3>
+      <p>All units with current deployment status</p>
+    </div>
+    <div class="filters">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-btn" onclick="setFilter('deployed', this)">Deployed</button>
+      <button class="filter-btn" onclick="setFilter('inprogress', this)">In Progress</button>
+      <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Robot</th>
+          <th>Client</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Deployed At</th>
+          <th>Progress</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  <span>© 2026 <strong>ReshapeX Industries</strong> — All rights reserved</span>
+  <span>Dashboard v2.4.1 &nbsp;·&nbsp; Last updated: <strong id="last-sync">—</strong> &nbsp;·&nbsp; Next refresh in <strong id="countdown">10</strong>s</span>
+</footer>
+
+<script src="data.js"></script>
+<script>
+  // Deep-copy data so simulation mutations don't affect the original
+  let allData = JSON.parse(JSON.stringify(ROBOTS_DATA));
+  let activeFilter = 'all';
+  const REFRESH_INTERVAL = 10; // seconds
+
+  const badgeLabel = { deployed: 'Deployed', inprogress: 'In Progress', pending: 'Pending' };
+  const icons      = { deployed: '✅', inprogress: '⚙️', pending: '🕐' };
+
+  // ── Rendering ──────────────────────────────────────────────────
+
+  function render(rows) {
+    document.getElementById('tbody').innerHTML = rows.map(r => {
+      const pctClass = r.status === 'deployed' ? 'green' : r.status === 'inprogress' ? 'yellow' : '';
+      return `
+      <tr data-status="${r.status}">
+        <td>
+          <div class="robot-cell">
+            <div class="robot-icon icon-${r.status}">${icons[r.status]}</div>
+            <div>
+              <div class="robot-id">${r.id}</div>
+              <div class="robot-type">${r.type}</div>
+            </div>
+          </div>
+        </td>
+        <td><div class="client-name">${r.client}</div></td>
+        <td>
+          <div class="location">
+            <div class="location-dot"></div>
+            ${r.location}
+          </div>
+        </td>
+        <td>
+          <span class="badge ${r.status}">
+            <span class="badge-dot"></span>
+            ${badgeLabel[r.status]}
+          </span>
+        </td>
+        <td>
+          <div class="deploy-time">${r.time}</div>
+          <div class="deploy-elapsed">${r.elapsed}</div>
+        </td>
+        <td class="progress-cell">
+          <div class="progress-row">
+            <span class="progress-label">${r.status === 'pending' ? 'Awaiting' : 'Complete'}</span>
+            <span class="progress-pct ${pctClass}">${r.progress}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill ${r.status}" style="width:${r.progress}%"></div>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function applyFilter() {
+    render(activeFilter === 'all' ? allData : allData.filter(r => r.status === activeFilter));
+  }
+
+  function setFilter(status, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = status;
+    applyFilter();
+  }
+
+  function updateCounts() {
+    const counts = { deployed: 0, inprogress: 0, pending: 0 };
+    allData.forEach(r => counts[r.status]++);
+    document.getElementById('cnt-deployed').textContent   = counts.deployed;
+    document.getElementById('cnt-inprogress').textContent = counts.inprogress;
+    document.getElementById('cnt-pending').textContent    = counts.pending;
+    document.getElementById('pct-deployed').textContent   =
+      Math.round((counts.deployed / allData.length) * 100) + '%';
+    document.querySelector('.card.total .card-value').textContent = allData.length;
+  }
+
+  // ── Simulation ─────────────────────────────────────────────────
+
+  function now12h() {
+    return new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function fmtElapsed(ms) {
+    const totalMin = Math.floor(ms / 60000);
+    return `${Math.floor(totalMin / 60)}h ${totalMin % 60}m`;
+  }
+
+  function simulateTick() {
+    const pending    = allData.filter(r => r.status === 'pending');
+    const inprogress = allData.filter(r => r.status === 'inprogress');
+
+    // Advance each in-progress robot by a random 10–25% chunk
+    inprogress.forEach(r => {
+      const increment = Math.floor(Math.random() * 16) + 10;
+      r.progress = Math.min(100, r.progress + increment);
+      if (r.progress >= 100) {
+        r.progress = 100;
+        r.status   = 'deployed';
+        r.elapsed  = fmtElapsed(Date.now() - r._startedAt);
+      }
+    });
+
+    // Randomly start one pending robot (if any remain)
+    if (pending.length > 0 && Math.random() > 0.3) {
+      const robot       = pending[Math.floor(Math.random() * pending.length)];
+      robot.status      = 'inprogress';
+      robot.progress    = Math.floor(Math.random() * 10) + 5;
+      robot.time        = now12h();
+      robot.elapsed     = '0h 0m';
+      robot._startedAt  = Date.now();
+    }
+
+    updateCounts();
+    applyFilter();
+    updateLastSync();
+  }
+
+  // ── Clock & countdown ──────────────────────────────────────────
+
+  let countdown = REFRESH_INTERVAL;
+
+  function updateLastSync() {
+    document.getElementById('last-sync').textContent =
+      new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function updateClock() {
+    document.getElementById('clock').textContent =
+      new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    countdown--;
+    document.getElementById('countdown').textContent = countdown;
+    if (countdown <= 0) {
+      countdown = REFRESH_INTERVAL;
+      simulateTick();
+    }
+  }
+
+  // ── Init ───────────────────────────────────────────────────────
+
+  allData.forEach(r => {
+    if (r.status === 'inprogress') r._startedAt = Date.now() - (r.progress / 100) * 3600000;
+  });
+
+  applyFilter();
+  updateCounts();
+  updateLastSync();
+  setInterval(updateClock, 1000);
+</script>
+
+</body>
+</html>
