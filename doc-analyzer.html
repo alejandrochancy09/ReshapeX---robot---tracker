@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DocAnalyzer AI</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #090c14;
+    --surface:   #111520;
+    --surface2:  #161b2c;
+    --border:    #1f2640;
+    --border2:   #252d47;
+    --text:      #e2e8f0;
+    --muted:     #4b5680;
+    --muted2:    #6b7db3;
+    --accent:    #6366f1;
+    --accent2:   #818cf8;
+    --green:     #22c55e;
+    --yellow:    #f59e0b;
+    --red:       #ef4444;
+    --slate:     #64748b;
+    --radius:    12px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── HEADER ─────────────────────────────────── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; }
+
+  .logo-mark {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .logo-mark svg { width: 18px; height: 18px; fill: #fff; }
+
+  .logo-text {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo-divider { width: 1px; height: 20px; background: var(--border2); margin: 0 14px; }
+
+  .logo-subtitle { font-size: 13px; color: var(--muted2); font-weight: 400; }
+
+  .header-right { display: flex; align-items: center; gap: 20px; }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-badge.ready {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+  }
+
+  .status-badge.busy {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  /* ─── MAIN ───────────────────────────────────── */
+  main { max-width: 1100px; margin: 0 auto; padding: 36px 40px 60px; }
+
+  .page-title { margin-bottom: 28px; }
+  .page-title h2 { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .page-title p { margin-top: 4px; font-size: 13px; color: var(--muted2); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .panel-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .panel-icon.indigo { background: rgba(99, 102, 241, 0.12); }
+  .panel-icon.green  { background: rgba(34, 197, 94, 0.1); }
+  .panel-icon.amber  { background: rgba(245, 158, 11, 0.1); }
+  .panel-icon.purple { background: rgba(168, 85, 247, 0.12); }
+
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 14px 16px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.18s;
+  }
+
+  textarea::placeholder { color: var(--muted); }
+  textarea:focus { border-color: var(--accent); }
+
+  .input-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+  }
+
+  .char-count { font-size: 12px; color: var(--muted2); }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 700;
+    padding: 11px 22px;
+    border-radius: 9px;
+    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+  }
+
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35); }
+  .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--muted2);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+  .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-banner {
+    display: none;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-size: 13px;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+  .error-banner.show { display: flex; }
+
+  #resultsWrap { display: none; }
+  #resultsWrap.show { display: block; }
+
+  .summary-text { font-size: 14px; line-height: 1.7; color: var(--text); }
+
+  .key-points { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+
+  .key-points li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .kp-num {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: rgba(99, 102, 241, 0.12);
+    color: var(--accent2);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .qa-thread { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+
+  .qa-empty { font-size: 13px; color: var(--muted2); font-style: italic; }
+
+  .qa-item { display: flex; flex-direction: column; gap: 8px; }
+
+  .qa-q, .qa-a {
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+
+  .qa-q {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--muted2);
+    align-self: flex-end;
+    max-width: 85%;
+  }
+
+  .qa-a {
+    background: rgba(99, 102, 241, 0.06);
+    border: 1px solid rgba(99, 102, 241, 0.18);
+    color: var(--text);
+    align-self: flex-start;
+    max-width: 85%;
+  }
+
+  .qa-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; opacity: 0.7; margin-bottom: 4px; display: block; }
+
+  .qa-input-row { display: flex; gap: 10px; }
+
+  .qa-input-row input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 9px;
+    color: var(--text);
+    padding: 11px 14px;
+    font-size: 13.5px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.18s;
+  }
+  .qa-input-row input::placeholder { color: var(--muted); }
+  .qa-input-row input:focus { border-color: var(--accent); }
+
+  .skeleton {
+    height: 14px;
+    border-radius: 5px;
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--border2) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  footer strong { color: var(--muted2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20"><path d="M4 2h8l4 4v12H4V2zm7 1.5V7h3.5L11 3.5zM6 11h8v1.5H6V11zm0 3h8v1.5H6V14zm0-6h4v1.5H6V8z"/></svg>
+    </div>
+    <span class="logo-text">DocAnalyzer AI</span>
+    <div class="logo-divider"></div>
+    <span class="logo-subtitle">AI Document Analyzer</span>
+  </div>
+
+  <div class="header-right">
+    <div class="status-badge ready" id="statusBadge">
+      <div class="status-dot"></div>
+      <span id="statusText">Ready</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="page-title">
+    <h2>Analyze a Document</h2>
+    <p>Paste any text below — get a summary, key points, and ask follow-up questions about it.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">
+      <div class="panel-icon indigo">📄</div>
+      Source Text
+    </div>
+    <textarea id="docInput" placeholder="Paste an article, report, contract, transcript — any text you'd like analyzed..."></textarea>
+    <div class="input-footer">
+      <span class="char-count" id="charCount">0 characters</span>
+      <button class="btn-primary" id="analyzeBtn" onclick="analyzeDocument()">
+        <span id="analyzeBtnText">Analyze</span>
+      </button>
+    </div>
+    <div class="error-banner" id="errorBanner"></div>
+  </div>
+
+  <div id="resultsWrap">
+    <div class="panel">
+      <div class="panel-title">
+        <div class="panel-icon green">📝</div>
+        Summary
+      </div>
+      <div class="summary-text" id="summaryText"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <div class="panel-icon amber">✨</div>
+        Key Points
+      </div>
+      <ol class="key-points" id="keyPoints"></ol>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <div class="panel-icon purple">💬</div>
+        Ask About This Document
+      </div>
+      <div class="qa-thread" id="qaThread">
+        <div class="qa-empty">Ask a question about the document above and the answer will appear here.</div>
+      </div>
+      <div class="qa-input-row">
+        <input type="text" id="qaInput" placeholder="e.g. What are the main risks mentioned?" onkeydown="if(event.key==='Enter') askQuestion()" />
+        <button class="btn-secondary" id="qaBtn" onclick="askQuestion()">Ask</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>© 2026 <strong>DocAnalyzer AI</strong></span>
+  <span>Powered by <strong>Claude</strong></span>
+</footer>
+
+<script>
+  // ── CONFIG ────────────────────────────────────────────────────────────
+  // Paste your Anthropic API key below. Get one at https://console.anthropic.com/settings/keys
+  //
+  // ⚠️ SECURITY WARNING: this key is embedded in client-side JavaScript, so
+  // anyone who opens this page (view-source / DevTools / network tab) can
+  // read it and use it to make billed requests under your account. That's
+  // fine for a local demo you run only for yourself, but NEVER deploy this
+  // file publicly (GitHub Pages, a shared link, etc.) with a real key
+  // inside it. For anything beyond local use, move the API call to a small
+  // backend/serverless function that holds the key server-side instead.
+  const CONFIG = {
+    ANTHROPIC_API_KEY: "YOUR_ANTHROPIC_API_KEY_HERE",
+    MODEL: "claude-opus-5",
+  };
+
+  const API_URL = "https://api.anthropic.com/v1/messages";
+
+  let documentText = "";
+  let qaHistory = []; // [{role, content}, ...]
+
+  const docInput      = document.getElementById('docInput');
+  const charCount      = document.getElementById('charCount');
+  const analyzeBtn     = document.getElementById('analyzeBtn');
+  const analyzeBtnText = document.getElementById('analyzeBtnText');
+  const errorBanner    = document.getElementById('errorBanner');
+  const resultsWrap    = document.getElementById('resultsWrap');
+  const summaryText    = document.getElementById('summaryText');
+  const keyPoints       = document.getElementById('keyPoints');
+  const qaThread        = document.getElementById('qaThread');
+  const qaInput         = document.getElementById('qaInput');
+  const qaBtn           = document.getElementById('qaBtn');
+  const statusBadge     = document.getElementById('statusBadge');
+  const statusText      = document.getElementById('statusText');
+
+  docInput.addEventListener('input', () => {
+    charCount.textContent = `${docInput.value.length.toLocaleString()} characters`;
+  });
+
+  function setBusy(isBusy, label) {
+    statusBadge.classList.toggle('ready', !isBusy);
+    statusBadge.classList.toggle('busy', isBusy);
+    statusText.textContent = label || (isBusy ? 'Working…' : 'Ready');
+  }
+
+  function showError(message) {
+    errorBanner.textContent = message;
+    errorBanner.classList.add('show');
+  }
+
+  function clearError() {
+    errorBanner.classList.remove('show');
+    errorBanner.textContent = '';
+  }
+
+  async function callClaude(messages, { maxTokens = 1500 } = {}) {
+    if (!CONFIG.ANTHROPIC_API_KEY || CONFIG.ANTHROPIC_API_KEY === "YOUR_ANTHROPIC_API_KEY_HERE") {
+      throw new Error("No Anthropic API key configured. Paste your key into the CONFIG object at the top of the script.");
+    }
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": CONFIG.ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        // Required for calling the Anthropic API directly from a browser.
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: CONFIG.MODEL,
+        max_tokens: maxTokens,
+        output_config: { effort: "medium" },
+        messages,
+      }),
+    });
+
+    if (!response.ok) {
+      let detail = "";
+      try {
+        const errJson = await response.json();
+        detail = errJson?.error?.message || "";
+      } catch (_) {}
+      if (response.status === 401) {
+        throw new Error("Authentication failed — check that the API key in CONFIG is correct.");
+      }
+      if (response.status === 429) {
+        throw new Error("Rate limited by the Anthropic API. Wait a moment and try again.");
+      }
+      throw new Error(`Request failed (${response.status}): ${detail || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const block = (data.content || []).find(b => b.type === "text");
+    return block ? block.text : "";
+  }
+
+  function extractJson(text) {
+    // Strip ```json fences if the model wrapped its answer in a code block.
+    const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    const raw = fenced ? fenced[1] : text;
+    return JSON.parse(raw.trim());
+  }
+
+  async function analyzeDocument() {
+    const text = docInput.value.trim();
+    clearError();
+
+    if (!text) {
+      showError("Paste some text into the box above before analyzing.");
+      return;
+    }
+
+    documentText = text;
+    qaHistory = [];
+    qaThread.innerHTML = '<div class="qa-empty">Ask a question about the document above and the answer will appear here.</div>';
+
+    analyzeBtn.disabled = true;
+    analyzeBtnText.innerHTML = '<span class="spinner"></span>';
+    setBusy(true, 'Analyzing…');
+    resultsWrap.classList.remove('show');
+
+    try {
+      const prompt = `You are analyzing a document for a reader who wants a fast, accurate overview.
+
+Read the document below and respond with ONLY a JSON object (no markdown fences, no extra text) in exactly this shape:
+{
+  "summary": "a clear 3-5 sentence summary of the document",
+  "key_points": ["point 1", "point 2", "point 3", "point 4", "point 5"]
+}
+
+Provide exactly 5 key points, each a single concise sentence capturing a distinct, important idea from the document.
+
+DOCUMENT:
+"""
+${text}
+"""`;
+
+      const raw = await callClaude([{ role: "user", content: prompt }], { maxTokens: 1500 });
+      const parsed = extractJson(raw);
+
+      summaryText.textContent = parsed.summary || "No summary returned.";
+
+      keyPoints.innerHTML = (parsed.key_points || []).map((point, i) => `
+        <li>
+          <div class="kp-num">${i + 1}</div>
+          <div>${escapeHtml(point)}</div>
+        </li>
+      `).join('');
+
+      resultsWrap.classList.add('show');
+    } catch (err) {
+      showError(err.message || "Something went wrong while analyzing the document.");
+    } finally {
+      analyzeBtn.disabled = false;
+      analyzeBtnText.textContent = "Analyze";
+      setBusy(false);
+    }
+  }
+
+  async function askQuestion() {
+    const question = qaInput.value.trim();
+    if (!question) return;
+    if (!documentText) {
+      showError("Analyze a document first before asking questions about it.");
+      return;
+    }
+
+    clearError();
+    qaInput.value = "";
+    qaBtn.disabled = true;
+    qaInput.disabled = true;
+    setBusy(true, 'Thinking…');
+
+    const emptyMsg = qaThread.querySelector('.qa-empty');
+    if (emptyMsg) emptyMsg.remove();
+
+    const qaItem = document.createElement('div');
+    qaItem.className = 'qa-item';
+    qaItem.innerHTML = `
+      <div class="qa-q"><span class="qa-label">You</span>${escapeHtml(question)}</div>
+      <div class="qa-a"><span class="qa-label">Claude</span><span class="skeleton" style="width:60%;display:block"></span></div>
+    `;
+    qaThread.appendChild(qaItem);
+    qaThread.scrollTop = qaThread.scrollHeight;
+
+    try {
+      const systemContext = `You are answering questions about the following document. Answer only based on this document; if the answer isn't in it, say so clearly. Keep answers concise (2-4 sentences unless more detail is truly needed).
+
+DOCUMENT:
+"""
+${documentText}
+"""`;
+
+      const messages = [
+        { role: "user", content: systemContext },
+        { role: "assistant", content: "Understood — I'll answer questions based only on that document." },
+        ...qaHistory,
+        { role: "user", content: question },
+      ];
+
+      const answer = await callClaude(messages, { maxTokens: 800 });
+
+      qaHistory.push({ role: "user", content: question });
+      qaHistory.push({ role: "assistant", content: answer });
+
+      qaItem.querySelector('.qa-a').innerHTML = `<span class="qa-label">Claude</span>${escapeHtml(answer)}`;
+    } catch (err) {
+      qaItem.querySelector('.qa-a').innerHTML = `<span class="qa-label">Claude</span>⚠️ ${escapeHtml(err.message || "Failed to get an answer.")}`;
+    } finally {
+      qaBtn.disabled = false;
+      qaInput.disabled = false;
+      qaInput.focus();
+      setBusy(false);
+      qaThread.scrollTop = qaThread.scrollHeight;
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+</script>
+
+</body>
+</html>
