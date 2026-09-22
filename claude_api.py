@@ -1,6 +1,6 @@
 import anthropic
 
-API_KEY = "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"
+API_KEY = "API_KEY = "su-api-key-aquí""
 
 cliente = anthropic.Anthropic(api_key=API_KEY)
 
