@@ -2,7 +2,7 @@
 
 A portfolio project that tracks the deployment of industrial robots across client sites for **ReshapeX**. It combines a web dashboard, a Python data analyzer, and an AI assistant that answers questions about the fleet using **Retrieval-Augmented Generation (RAG)** with the Claude API.
 
-🔗 🔗 **Live dashboard:** [View the dashboard](https://alejandrochancy09.github.io/ReshapeX---robot---tracker/dashboard.html)
+🔗 **Live dashboard:** [View the dashboard](https://alejandrochancy09.github.io/ReshapeX---robot---tracker/reshapex.html)
 
 ![Dashboard preview](docs/dashboard.png)
 
@@ -62,7 +62,7 @@ cp .env.example .env        # On Windows PowerShell: copy .env.example .env
 python rag_simple.py
 ```
 
-To view the dashboard locally, open `dashboard.html` in your browser.
+To view the dashboard locally, open `reshapex.html` in your browser.
 
 ---
 
@@ -71,7 +71,7 @@ To view the dashboard locally, open `dashboard.html` in your browser.
 ```
 ├── rag_simple.py          # RAG assistant (Retrieval → Augmentation → Generation)
 ├── analizador_robots.py        # Robot data analyzer
-├── dashboard.html       # Dashboard
+├── reshapex.html       # Dashboard
 ├── requirements.txt       # Python dependencies
 ├── .env.example           # Template for environment variables
 └── .gitignore
