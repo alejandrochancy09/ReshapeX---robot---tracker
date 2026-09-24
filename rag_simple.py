@@ -1,7 +1,18 @@
 import anthropic
+import os
 
-# Configuración
-API_KEY = "su-api-key-aquí"
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+# Configuración — el key viene del sistema operativo, no del código
+API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+
+if not API_KEY:
+    print("Error: no se encontró ANTHROPIC_API_KEY")
+    exit()
+
 cliente = anthropic.Anthropic(api_key=API_KEY)
 
 # BASE DE CONOCIMIENTO
