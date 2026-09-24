@@ -1,85 +1,101 @@
-# ReshapeX — Robot Deployment Tracker
+# ReshapeX Robot Tracker
 
-A real-time operations dashboard for monitoring the deployment status of an industrial robot fleet across multiple manufacturing facilities. Built as a front-end showcase project, ReshapeX simulates the kind of live monitoring tool a robotics or industrial automation company would use to track hardware rollouts across client sites.
+A portfolio project that tracks the deployment of industrial robots across client sites for **ReshapeX**. It combines a web dashboard, a Python data analyzer, and an AI assistant that answers questions about the fleet using **Retrieval-Augmented Generation (RAG)** with the Claude API.
 
-![Status](https://img.shields.io/badge/status-active-success)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
-![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-6366f1)
+🔗 **Live dashboard:** [LINK DE GITHUB PAGES]
+
+![Dashboard preview](docs/dashboard.png)
 
 ---
 
-## Overview
+## What's inside
 
-ReshapeX tracks a fleet of 8 robots (welding units, precision drills, assembly systems, inspection units, and more) as they move through three deployment stages — **Pending → In Progress → Deployed** — across four manufacturing facilities and client accounts. The dashboard presents fleet-wide summary metrics, a live filterable table of every unit, and per-robot progress bars that update on their own, mimicking a real production monitoring feed.
+| Component | Description | Tech |
+|---|---|---|
+| **Dashboard** | Visual overview of robots, clients, deployment status and progress | HTML, CSS, JavaScript |
+| **Robot analyzer** | Script that processes robot data and summarizes status per client | Python |
+| **RAG assistant** | Answers natural-language questions about the fleet using only real data | Python, Claude API |
 
-The project is built entirely with vanilla HTML, CSS, and JavaScript — no frameworks, no build step, no dependencies. Open the file and it runs.
+---
 
-## What It Does
+## RAG assistant: how it works
 
-- Displays a live overview of the entire robot fleet: total units, deployed count, in-progress count, and pending count, with completion percentage.
-- Renders a detailed fleet table with robot ID, type, assigned client, facility/bay location, current status, deployment timestamp, elapsed time, and a live progress bar.
-- Lets users filter the fleet view by status (All / Deployed / In Progress / Pending) with a single click.
-- Continuously simulates real deployment activity: in-progress robots advance toward completion, and pending robots automatically kick off deployment — all on a visible countdown timer, so the UI never looks static.
-- Ships with its own lightweight test suite that validates the underlying deployment logic and data integrity, runnable directly in the browser console.
+The assistant never answers from general knowledge. Every response is grounded in the project's data through three steps:
 
-## Key Features
+1. **Retrieval** – Finds the relevant robots for the question, combining filters by client and by status (e.g. *"Which deployed robots does Volcarex Auto have?"*).
+2. **Augmentation** – Builds a prompt containing the question and only the retrieved records.
+3. **Generation** – Claude answers using that context. A system prompt instructs it to say so explicitly when the data is not enough, instead of guessing.
 
-**🔴 Real-Time Updates**
-A live clock, a "last synced" timestamp, and a visible countdown timer keep the dashboard feeling connected to a live system. Every metric card and table row re-renders automatically as fleet status changes.
-
-**⚙️ Live API Simulation**
-Since there's no backend, ReshapeX simulates one: a tick-based engine randomly advances in-progress robots by realistic increments, transitions robots from pending to in-progress, and flips completed units to "Deployed" — reproducing the unpredictability of a real deployment feed without needing a live API.
-
-**✅ QA Test Suite**
-A dedicated [test-runner.html](test-runner.html) page runs [tests.js](tests.js) against the deployment logic, covering:
-- **Unit tests** — progress values are correctly capped at 100% and never overflow.
-- **Integration tests** — every robot record has valid, complete data (status, progress range, required fields).
-- **Regression tests** — fleet counters (deployed / in-progress / pending) stay consistent as robots change status.
-
-Results print directly to the browser console with pass/fail styling, making it easy to verify the dashboard's core logic hasn't broken after a change.
-
-**🎨 Polished, Dark-Themed UI**
-A cohesive dark interface with gradient accents, animated status indicators, hover states, and color-coded badges — designed to look and feel like a production-grade internal tool.
-
-## Technologies Used
-
-| Technology | Purpose |
-|---|---|
-| **HTML5** | Semantic page structure and layout |
-| **CSS3** | Custom dark theme, gradients, animations, and responsive grid/table layouts |
-| **JavaScript (ES6+)** | Rendering logic, filtering, deployment simulation engine, and test suite |
-| **Claude Code** | Used as an AI pair-programming assistant to design, build, and iterate on the dashboard |
-
-No external libraries, frameworks, or build tools are required — everything runs directly in the browser.
-
-## Project Structure
+**Example**
 
 ```
-├── reshapex.html      # Main dashboard — polished UI, live simulation, filtering
-├── dashboard.html      # Earlier dashboard iteration
-├── data.js             # Robot fleet dataset consumed by the dashboard
-├── robots.json         # Standalone JSON export of the fleet dataset
-├── tests.js            # QA test suite (unit, integration, regression)
-├── test-runner.html    # Browser page for executing the test suite
-└── README.md
+Question: Which deployed robots does Volcarex Auto have?
+Retrieval: 1 record found
+Answer:   Volcarex Auto has 1 deployed robot: RBT-0041 (Welding Unit), 100% operational.
 ```
 
-## Getting Started
+Design decisions:
 
-No installation or dependencies needed.
+- API key loaded from a `.env` file (never committed to the repo).
+- API errors (connection, rate limit, status) are handled with clear messages instead of crashing.
+- Model, token limit and system prompt are defined as constants in one place.
+- Functions are documented with docstrings and type hints.
 
-1. Clone or download this repository.
-2. Open [reshapex.html](reshapex.html) in any modern browser to view the live dashboard.
-3. Open [test-runner.html](test-runner.html) and check the DevTools console to see the QA test suite run.
+---
 
-## Why It Was Built
+## Getting started
 
-This project was built to explore and demonstrate front-end skills around building a **realistic, data-driven operations dashboard** using only core web technologies — no frameworks or shortcuts. Industrial and robotics companies rely heavily on internal dashboards to track hardware rollouts across clients and facilities, and ReshapeX was designed as a portfolio piece that mirrors exactly that kind of tool: real-time status tracking, filterable data tables, simulated live data feeds, and a QA process to back it up.
+**Requirements:** Python 3.10+ and an Anthropic API key ([console.anthropic.com](https://console.anthropic.com)).
 
-It also served as a hands-on exercise in working with **Claude Code** as a development partner — using AI assistance to iterate quickly on UI polish, simulation logic, and test coverage while keeping the codebase clean, dependency-free, and easy to reason about.
+```bash
+# 1. Clone the repository
+git clone https://github.com/alejandrochancy09/ReshapeX---robot---tracker.git
+cd ReshapeX---robot---tracker
 
-## License
+# 2. Install dependencies
+pip install -r requirements.txt
 
-This project is available for personal and portfolio use.
+# 3. Create your .env file from the example and add your API key
+cp .env.example .env        # On Windows PowerShell: copy .env.example .env
+
+# 4. Run the RAG assistant
+python rag_simple.py
+```
+
+To view the dashboard locally, open `dashboard.html` in your browser.
+
+---
+
+## Project structure
+
+```
+├── rag_simple.py          # RAG assistant (Retrieval → Augmentation → Generation)
+├── analizador_robots.py        # Robot data analyzer
+├── dashboard.html       # Dashboard
+├── requirements.txt       # Python dependencies
+├── .env.example           # Template for environment variables
+└── .gitignore
+```
+
+---
+
+## What I learned
+
+- Building a RAG pipeline from scratch and understanding each step.
+- Working with REST APIs, authentication and tool-use agents.
+- Managing secrets safely with environment variables.
+- Writing maintainable Python: small functions, docstrings, type hints and error handling.
+- Using Git and GitHub for version control, and Claude Code in VS Code for AI-assisted development.
+
+## Next steps
+
+- Replace keyword-based retrieval with semantic search (embeddings).
+- Connect the RAG assistant to the dashboard as a chat interface.
+- Add maintenance history data so the assistant can answer maintenance questions accurately.
+
+---
+
+## Author
+
+**Alejandro Chancy**
+[GitHub](https://github.com/alejandrochancy09) · [LinkedIn](https://www.linkedin.com/in/alejandro-chancy-69049b1bb/)
