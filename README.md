@@ -2,7 +2,7 @@
 
 A portfolio project that tracks the deployment of industrial robots across client sites for **ReshapeX**. It combines a web dashboard, a Python data analyzer, and an AI assistant that answers questions about the fleet using **Retrieval-Augmented Generation (RAG)** with the Claude API.
 
-🔗 **Live dashboard:** [LINK DE GITHUB PAGES]
+🔗 🔗 **Live dashboard:** [View the dashboard](https://alejandrochancy09.github.io/ReshapeX---robot---tracker/dashboard.html)
 
 ![Dashboard preview](docs/dashboard.png)
 
